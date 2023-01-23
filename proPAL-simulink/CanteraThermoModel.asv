@@ -95,12 +95,11 @@ function Start(block)
     if isempty(model)
       model = Solution('Mevel2015-rocketry_modified.yaml')
     end
-    set(model,'Temperature',300.0,'Pressure',101325.0,'MassFractions', 'N2O:6, C4H6:1')
-    equilibrate(model, 'HP')
+    set(model,'Temperature',300.0,'Pressure',101325.0,'MassFractions', 'N2O:6, C4H6:1');
+    equilibrate(model, 'HP');
     temperature(model)
     cp_mass(model)
     cv_mass(model)
-    
     meanMolecularWeight(model)
 
 %endfunction
@@ -108,15 +107,23 @@ function Start(block)
 function Output(block)
    persistent model
    if isempty(model)
-      model = Solution('Mevel2015-rocketry_modified.yaml')
+      model = Solution('Mevel2015-rocketry_modified.yaml');
+      disp("MODEL RE-CREATED!")
    end
+    disp(block.OutputPort(1).Data);
+  set(model,'Temperature',block.InputPort(1).Data, ...
+      'Pressure',block.InputPort(2).Data, 'MassFractions', ...
+      sprintf('N2O:%0.5f, C4H6:1', block.InputPort(3).Data));
+  equilibrate(model, 'HP');
 
-  set(model,'Temperature',block.InputPort(1).Data,'Pressure',101325.0,'MassFractions', 'N2O:6, C4H6:1')
-  equilibrate(model, 'HP')
+  block.OutputPort(1).Data = cp_mass(model)/cv_mass(model);
+  block.OutputPort(2).Data = temperature(model);
+  block.OutputPort(3).Data = meanMolecularWeight(model);
 
-  block.OutputPort(1).Data = cp_mass(model)/cv_mass(model)
-  block.OutputPort(2).Data = temperature(model)
-  block.OutputPort(3).Data = meanMolecularWeight(model)
+  disp("iter");
+  disp(block.OutputPort(1).Data);
+  disp(block.OutputPort(2).Data);
+  disp(block.OutputPort(3).Data);
   
 %endfunction
 
